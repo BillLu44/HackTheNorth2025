@@ -12,6 +12,7 @@ type Conversation = {
   messages: Message[];
   createdAt: number;
   updatedAt: number;
+  title?: string;
 };
 
 const LS_KEY = "wishlist.chat.conversations.v1";
@@ -22,17 +23,14 @@ const GREETING: Message = {
   content: "Hi! Ask me anything — this demo echoes your message.",
 };
 
-function makeNewConversation(): Conversation {
-  return {
-    id: crypto.randomUUID(),
-    messages: [{ ...GREETING, id: crypto.randomUUID() }],
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-}
+const makeNewConversation = (): Conversation => ({
+  id: crypto.randomUUID(),
+  messages: [{ ...GREETING, id: crypto.randomUUID() }],
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+});
 
 export default function ChatPage() {
-  // conversations[0] is the active one; the rest are archives (0: active, 1: most recent archived, …)
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     if (typeof window === "undefined") return [makeNewConversation()];
     try {
@@ -45,60 +43,71 @@ export default function ChatPage() {
     }
   });
 
-  // Derived shortcut
   const active = conversations[0];
-
-  // Persist to localStorage whenever conversations change
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(conversations));
-  }, [conversations]);
-
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
-  // Autoscroll when active conversation messages change
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(conversations));
+  }, [conversations]);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [active?.messages.length]);
 
-  // Sidebar labels: active is "New conversation", archives are "Conversation 1, 2, ..."
-  const sidebarItems = useMemo(() => {
-    const items = conversations.map((c, idx) => {
-      if (idx === 0) return { id: c.id, label: "New conversation", idx };
-      return { id: c.id, label: `Conversation ${idx}`, idx };
-    });
-    return items;
-  }, [conversations]);
+  // Sidebar labels: index 0 = "New conversation", archives start at 1
+  const sidebarItems = conversations.map((c, idx) => ({
+    id: c.id,
+    label: idx === 0 ? "New conversation" : `Conversation ${idx}`,
+    idx,
+  }));
 
-  const switchTo = (idx: number) => {
-    if (idx === 0) return; // already active
-    // Move clicked conversation to the front; keep others in order
-    setConversations((prev) => {
-      const clone = [...prev];
-      const [picked] = clone.splice(idx, 1);
-      return [picked, ...clone];
-    });
-  };
+  // --- Switching logic by id (robust) ---
+  const switchToId = (id: string) => {
+  setConversations((prev) => {
+    const i = prev.findIndex((c) => c.id === id);
+    if (i < 0) return prev;      // not found
+    if (i == 0) return prev;    // already active → no reorder
+    const clone = [...prev];
+    const [picked] = clone.splice(i, 1);
+    return [picked, ...clone];
+  });
+};
+
 
   const newChat = () => {
     setConversations((prev) => {
-      // archive the current active at the front of archive list by inserting a new one at index 0
-      const archivedActive = { ...prev[0], updatedAt: Date.now() };
       const fresh = makeNewConversation();
-      // new order: fresh active, then old active, then previous archives
+      const archivedActive = { ...prev[0], updatedAt: Date.now() };
       return [fresh, archivedActive, ...prev.slice(1)];
     });
     setInput("");
+  };
+
+  // Slash command: /open N  (N = 1,2,3...)
+  const tryOpenByIndexCommand = (text: string): boolean => {
+    const m = text.match(/^\/open\s+(\d+)\s*$/i);
+    if (!m) return false;
+    const n = parseInt(m[1], 10);
+    if (!Number.isFinite(n) || n < 0 || n >= conversations.length) return true; // handled (noop if OOB)
+    // Bring that index to front so you can continue chatting in it
+    const id = conversations[n].id;
+    switchToId(id);
+    setInput("");
+    return true;
   };
 
   const send = () => {
     const text = input.trim();
     if (!text || sending) return;
 
+    // handle /open N
+    if (tryOpenByIndexCommand(text)) return;
+
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
 
-    // append user message to active
+    // append user
     setConversations((prev) => {
       const [head, ...rest] = prev;
       const updatedHead: Conversation = {
@@ -112,7 +121,7 @@ export default function ChatPage() {
     setInput("");
     setSending(true);
 
-    // Fake assistant reply
+    // fake assistant
     setTimeout(() => {
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
@@ -142,30 +151,31 @@ export default function ChatPage() {
     }
   };
 
-  // Demo products for the optional carousel (place matching files in /public)
+  // Demo products for optional carousel
   const products = [
     {
       imageSrc: "https://images.unsplash.com/photo-1511920170033-f8396924c348?",
       title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
       price: "$179.99",
       rating: 4.7,
-      reviews: "8k",
+      reviews: "8K",
     },
     {
       imageSrc: "https://images.unsplash.com/photo-1498804103079-a6351b050096?",
       title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
       price: "$179.99",
       rating: 4.7,
-      reviews: "8k",
+      reviews: "8K",
     },
     {
       imageSrc: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?",
       title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
       price: "$179.99",
       rating: 4.7,
-      reviews: "8k",
+      reviews: "8K",
     },
   ];
+
 
   return (
     <div className="chat-shell">
@@ -184,7 +194,7 @@ export default function ChatPage() {
               className="chat-item"
               role="treeitem"
               aria-selected={item.idx === 0}
-              onClick={() => switchTo(item.idx)}
+              onClick={() => switchToId(item.id)}
               title={item.label}
               style={item.idx === 0 ? { fontWeight: 600 } : undefined}
             >
@@ -232,15 +242,14 @@ export default function ChatPage() {
             </div>
           ))}
           <div ref={endRef} />
-          {/* spacer so last message isn't hidden behind input */}
           <div style={{ height: 96 }} />
         </div>
 
-        {/* Composer pinned at bottom; wrapper is transparent per your last request */}
+        {/* Composer pinned at bottom */}
         <div className="chat-input-wrap">
           <div className="chat-input">
             <textarea
-              placeholder="Start writing your wishlist..."
+              placeholder='Type a message… (tip: try "/open 2")'
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
