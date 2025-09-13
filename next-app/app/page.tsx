@@ -1,6 +1,9 @@
+// next-app/app/chat/page.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Carousel from "./components/carousel";
+import ProductCard from "./components/product-card";
 
 type Message = { id: string; role: "user" | "assistant"; content: string };
 
@@ -20,7 +23,7 @@ export default function ChatPage() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  const send = async () => {
+  const send = () => {
     const text = input.trim();
     if (!text) return;
 
@@ -29,13 +32,13 @@ export default function ChatPage() {
     setInput("");
     setSending(true);
 
-    // Fake assistant response (echo with a tiny delay)
     setTimeout(() => {
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
         content:
-          "You said: " + text +
+          "You said: " +
+          text +
           "\n\n(This is a front-end only mock. Hook up an API route to call a model.)",
       };
       setMessages((m) => [...m, assistantMsg]);
@@ -50,6 +53,31 @@ export default function ChatPage() {
     }
   };
 
+  // Demo products (replace imageSrc with your own or external URLs)
+  const products = [
+    {
+      imageSrc: "https://images.unsplash.com/photo-1511920170033-f8396924c348?",
+      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
+      price: "$179.99",
+      rating: 4.7,
+      reviews: "8k",
+    },
+    {
+      imageSrc: "https://images.unsplash.com/photo-1498804103079-a6351b050096?",
+      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
+      price: "$179.99",
+      rating: 4.7,
+      reviews: "8k",
+    },
+    {
+      imageSrc: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?",
+      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
+      price: "$179.99",
+      rating: 4.7,
+      reviews: "8k",
+    },
+  ];
+
   return (
     <div className="chat-shell">
       {/* Sidebar */}
@@ -59,14 +87,20 @@ export default function ChatPage() {
           className="btn chat-new"
           onClick={() =>
             setMessages([
-              { id: crypto.randomUUID(), role: "assistant", content: "New chat started. How can I help?" },
+              {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: "New chat started. How can I help?",
+              },
             ])
           }
         >
           + New chat
         </button>
         <div className="chat-list">
-          <div className="chat-item" title="Current conversation">Current conversation</div>
+          <div className="chat-item" title="Current conversation">
+            Current conversation
+          </div>
         </div>
       </aside>
 
@@ -78,14 +112,34 @@ export default function ChatPage() {
         </header>
 
         <div className="chat-messages">
-          {messages.map((m) => (
-            <div className={`msg ${m.role}`} key={m.id}>
-              <div className="avatar">{m.role === "user" ? "U" : "A"}</div>
-              <div className="bubble">
-                {m.content.split("\n").map((line, i) => (
-                  <p key={i} style={{ marginBottom: line ? 8 : 0 }}>{line}</p>
-                ))}
+          {messages.map((m, idx) => (
+            <div key={m.id}>
+              <div className={`msg ${m.role}`}>
+                {/* avatar hidden per your current style */}
+                <div className="bubble">
+                  {m.content.split("\n").map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
               </div>
+
+              {/* Inject carousel after the FIRST assistant message only */}
+              {m.role === "assistant" && idx === 0 && (
+                <div style={{ margin: "20px 0" }}>
+                  <Carousel ariaLabel="Suggested products" gap={20} padX={8}>
+                    {products.map((p, i) => (
+                      <ProductCard
+                        key={i}
+                        imageSrc={p.imageSrc}
+                        title={p.title}
+                        price={p.price}
+                        rating={p.rating}
+                        reviews={p.reviews}
+                      />
+                    ))}
+                  </Carousel>
+                </div>
+              )}
             </div>
           ))}
           <div ref={endRef} />
@@ -94,7 +148,7 @@ export default function ChatPage() {
         <div className="chat-input-wrap">
           <div className="chat-input">
             <textarea
-              placeholder="Send a message…"
+              placeholder="Start writing your wishlist..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
