@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -6,7 +7,7 @@ export default function Home() {
       <section className="hero-card">
         <header className="hero-head">
           {/* If you add /public/logo.svg it will show; otherwise remove the img */}
-          <img src="/logo.svg" alt="" />
+          <Image src="/logo.svg" alt="" />
           <span className="badge">Demo</span>
         </header>
 
