@@ -5,6 +5,16 @@ import ThemeToggle from "../components/theme-toggle";
 export const metadata: Metadata = {
   title: "Wishlist™ App",
   description: "An app built for Hack The North 2025.",
+  icons: [
+    { rel: "icon", url: "/wishlist-light-16.png", sizes: "16x16", media: "(prefers-color-scheme: light)"},
+    { rel: "icon", url: "/wishlist-light-32.png", sizes: "32x32", media: "(prefers-color-scheme: light)"},
+    { rel: "icon", url: "/wishlist-light-64.png", sizes: "64x64", media: "(prefers-color-scheme: light)"},
+    { rel: "icon", url: "/wishlist-light-1000.png", sizes: "1000x1000", media: "(prefers-color-scheme: light)"},
+    { rel: "icon", url: "/wishlist-dark-16.png", sizes: "16x16", media: "(prefers-color-scheme: dark)"},
+    { rel: "icon", url: "/wishlist-dark-32.png", sizes: "32x32", media: "(prefers-color-scheme: dark)"},
+    { rel: "icon", url: "/wishlist-dark-64.png", sizes: "64x64", media: "(prefers-color-scheme: dark)"},
+    { rel: "icon", url: "/wishlist-dark-1000.png", sizes: "1000x1000", media: "(prefers-color-scheme: dark)"},
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
