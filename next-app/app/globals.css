@@ -253,9 +253,10 @@ body,
     border-right: 1px solid var(--c-border);
     background: var(--c-panel);
     padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: block;
+    overflow-y: scroll;
+    /* flex-direction: column;
+    gap: 12px; */
     min-width: 0;
 }
 
@@ -287,6 +288,8 @@ body,
     color: var(--c-text);
     background: var(--c-panel);
     cursor: pointer;
+    display: flex;
+    align-self: flex-start;
 }
 
 .chat-item:hover {
@@ -443,7 +446,7 @@ body,
 /* Centered “wishlist” style bubble */
 .bubble-row {
     display: grid;
-    margin: 16px 0;
+    margin: 14px 0;
 }
 
 .bubble-row.center {
@@ -534,14 +537,14 @@ body,
     border-radius: 18px;
     padding: 14px;
     box-shadow: 0 10px 24px var(--c-shadow);
-    height: 65%;
+    height: 100%;
 }
 
 .pcard-imgwrap {
     border-radius: 16px;
     overflow: hidden;
     background: var(--c-panel);
-    height: 100%;
+    height: 65%;
 }
 
 .pcard-img {
@@ -553,8 +556,8 @@ body,
 
 .pcard-title {
     margin-top: 14px;
-    font-size: 18px;
-    line-height: 1.35;
+    font-size: 14px;
+    line-height: 1.35; 
     color: var(--c-text);
 }
 
@@ -564,7 +567,7 @@ body,
     align-items: center;
     gap: 8px;
     color: var(--c-text);
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .pcard-price {
