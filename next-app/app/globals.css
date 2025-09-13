@@ -487,6 +487,7 @@ body,
     flex: 0 0 auto;
     /* no shrinking */
     scroll-snap-align: start;
+    height: 30vh;
 }
 
 /* Arrows */
@@ -533,18 +534,20 @@ body,
     border-radius: 18px;
     padding: 14px;
     box-shadow: 0 10px 24px var(--c-shadow);
+    height: 65%;
 }
 
 .pcard-imgwrap {
     border-radius: 16px;
     overflow: hidden;
     background: var(--c-panel);
+    height: 100%;
 }
 
 .pcard-img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: cover;
 }
 
