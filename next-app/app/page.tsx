@@ -1,7 +1,6 @@
-// next-app/app/chat/page.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Carousel from "../components/carousel";
 import ProductCard from "../components/product-card";
 
@@ -15,133 +14,141 @@ type Conversation = {
   title?: string;
 };
 
-const LS_KEY = "wishlist.chat.conversations.v1";
+const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
 const GREETING: Message = {
-  id: typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random()),
+  id: generateId(),
   role: "assistant",
-  content: "Hi! Ask me anything — this demo echoes your message.",
+  content: "Hi! I'm your shopping assistant. These options may interest you:",
 };
 
 const makeNewConversation = (): Conversation => ({
-  id: crypto.randomUUID(),
-  messages: [{ ...GREETING, id: crypto.randomUUID() }],
+  id: generateId(),
+  messages: [{ ...GREETING, id: generateId() }],
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
 
-export default function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    if (typeof window === "undefined") return [makeNewConversation()];
+// Simple localStorage wrapper with error handling
+const storage = {
+  get: (key: string) => {
+    if (typeof window === "undefined") return null;
     try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return [makeNewConversation()];
-      const parsed = JSON.parse(raw) as Conversation[];
-      return parsed.length ? parsed : [makeNewConversation()];
+      return localStorage.getItem(key);
     } catch {
-      return [makeNewConversation()];
+      return null;
     }
-  });
-
-  const active = conversations[0];
-  const [input, setInput] = useState("");
-  const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(conversations));
-  }, [conversations]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [active?.messages.length]);
-
-  // Sidebar labels: index 0 = "New conversation", archives start at 1
-  const sidebarItems = conversations.map((c, idx) => ({
-    id: c.id,
-    label: idx === 0 ? "New conversation" : `Conversation ${idx}`,
-    idx,
-  }));
-
-  // --- Switching logic by id (robust) ---
-  const switchToId = (id: string) => {
-  setConversations((prev) => {
-    const i = prev.findIndex((c) => c.id === id);
-    if (i < 0) return prev;      // not found
-    if (i == 0) return prev;    // already active → no reorder
-    const clone = [...prev];
-    const [picked] = clone.splice(i, 1);
-    return [picked, ...clone];
-  });
+  },
+  set: (key: string, value: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+  }
 };
 
+const LS_KEY = "wishlist_conversations";
+
+export default function ChatPage() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConvoId, setCurrentConvoId] = useState<string>("");
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  // Initialize conversations
+  useEffect(() => {
+    const stored = storage.get(LS_KEY);
+    let loadedConvos: Conversation[] = [];
+    
+    if (stored) {
+      try {
+        loadedConvos = JSON.parse(stored);
+        if (!Array.isArray(loadedConvos) || loadedConvos.length === 0) {
+          loadedConvos = [makeNewConversation()];
+        }
+      } catch {
+        loadedConvos = [makeNewConversation()];
+      }
+    } else {
+      loadedConvos = [makeNewConversation()];
+    }
+    
+    setConversations(loadedConvos);
+    setCurrentConvoId(loadedConvos[0].id);
+  }, []);
+
+  // Save conversations to localStorage
+  useEffect(() => {
+    if (conversations.length > 0) {
+      storage.set(LS_KEY, JSON.stringify(conversations));
+    }
+  }, [conversations]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversations, currentConvoId]);
+
+  const currentConvo = conversations.find(c => c.id === currentConvoId) || conversations[0];
 
   const newChat = () => {
-    setConversations((prev) => {
-      const fresh = makeNewConversation();
-      const archivedActive = { ...prev[0], updatedAt: Date.now() };
-      return [fresh, archivedActive, ...prev.slice(1)];
-    });
+    const newConvo = makeNewConversation();
+    setConversations(prev => [newConvo, ...prev]);
+    setCurrentConvoId(newConvo.id);
     setInput("");
   };
 
-  // Slash command: /open N  (N = 1,2,3...)
-  const tryOpenByIndexCommand = (text: string): boolean => {
-    const m = text.match(/^\/open\s+(\d+)\s*$/i);
-    if (!m) return false;
-    const n = parseInt(m[1], 10);
-    if (!Number.isFinite(n) || n < 0 || n >= conversations.length) return true; // handled (noop if OOB)
-    // Bring that index to front so you can continue chatting in it
-    const id = conversations[n].id;
-    switchToId(id);
-    setInput("");
-    return true;
+  const switchConversation = (id: string) => {
+    setCurrentConvoId(id);
   };
 
-  const send = () => {
+  const send = async () => {
     const text = input.trim();
     if (!text || sending) return;
 
-    // handle /open N
-    if (tryOpenByIndexCommand(text)) return;
+    const userMsg: Message = { 
+      id: generateId(), 
+      role: "user", 
+      content: text 
+    };
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
-
-    // append user
-    setConversations((prev) => {
-      const [head, ...rest] = prev;
-      const updatedHead: Conversation = {
-        ...head,
-        messages: [...head.messages, userMsg],
-        updatedAt: Date.now(),
-      };
-      return [updatedHead, ...rest];
-    });
+    // Add user message
+    setConversations(prev => prev.map(c => 
+      c.id === currentConvoId 
+        ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
+        : c
+    ));
 
     setInput("");
     setSending(true);
 
-    // fake assistant
+    // Simulate assistant response
     setTimeout(() => {
+      const responses = [
+        "I'd be happy to help you find that! Let me search for some options...",
+        "Great choice! Here are some similar products you might like:",
+        "I found some excellent options for you. Would you like to see more details?",
+        "That's a popular item! Here are some recommendations based on your request:",
+        "I can help you with that. Let me show you what's available:"
+      ];
+      
       const assistantMsg: Message = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         role: "assistant",
-        content:
-          "You said: " +
-          text +
-          "\n\n(This is a front-end only mock. Hook up an API route to call a model.)",
+        content: responses[Math.floor(Math.random() * responses.length)],
       };
-      setConversations((prev) => {
-        const [head, ...rest] = prev;
-        const updatedHead: Conversation = {
-          ...head,
-          messages: [...head.messages, assistantMsg],
-          updatedAt: Date.now(),
-        };
-        return [updatedHead, ...rest];
-      });
+      
+      setConversations(prev => prev.map(c => 
+        c.id === currentConvoId 
+          ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() }
+          : c
+      ));
+      
       setSending(false);
-    }, 400);
+    }, 1000 + Math.random() * 1000); // Random delay for realism
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -151,89 +158,90 @@ export default function ChatPage() {
     }
   };
 
-  // Demo products for optional carousel
+  // Demo products
   const products = [
     {
-      imageSrc: "https://images.unsplash.com/photo-1511920170033-f8396924c348?",
-      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
+      imageSrc: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=300&fit=crop",
+      title: "Ninja Hot & Iced XL Coffee Maker",
       price: "$179.99",
       rating: 4.7,
       reviews: "8K",
     },
     {
-      imageSrc: "https://images.unsplash.com/photo-1498804103079-a6351b050096?",
-      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
-      price: "$179.99",
-      rating: 4.7,
-      reviews: "8K",
+      imageSrc: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=300&h=300&fit=crop",
+      title: "Premium Coffee Beans - Dark Roast",
+      price: "$24.99",
+      rating: 4.8,
+      reviews: "2K",
     },
     {
-      imageSrc: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?",
-      title: "Ninja Hot & Iced XL Coffee Maker with Rapid Cold Brew",
-      price: "$179.99",
-      rating: 4.7,
-      reviews: "8K",
+      imageSrc: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=300&h=300&fit=crop",
+      title: "Ceramic Coffee Mug Set",
+      price: "$39.99",
+      rating: 4.6,
+      reviews: "1.2K",
     },
   ];
 
-
   return (
     <div className="chat-shell">
-      {/* Sidebar (scrolls) */}
+      {/* Sidebar */}
       <aside className="chat-sidebar">
-        <h2>Conversations</h2>
+        <h2>Your Wishlists</h2>
 
         <button className="btn chat-new" onClick={newChat}>
           + New chat
         </button>
 
-        <div className="chat-list" role="tree">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              className="chat-item"
-              role="treeitem"
-              aria-selected={item.idx === 0}
-              onClick={() => switchToId(item.id)}
-              title={item.label}
-              style={item.idx === 0 ? { fontWeight: 600 } : undefined}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="chat-list">
+          {conversations.map((convo, idx) => {
+            const isActive = convo.id === currentConvoId;
+            const label = `Chat ${conversations.length - idx}`;
+            
+            return (
+              <button
+                key={convo.id}
+                className={`chat-item ${isActive ? 'active' : ''}`}
+                onClick={() => switchConversation(convo.id)}
+                title={label}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </aside>
 
-      {/* Main (own scroll, pinned input) */}
+      {/* Main chat area */}
       <section className="chat-main">
         <header className="chat-topbar">
           <div>Wishlist™</div>
-          <div className="badge">Local demo</div>
+          <div className="badge">Shopping Assistant</div>
         </header>
 
         <div className="chat-messages">
-          {active.messages.map((m, idx) => (
-            <div key={m.id}>
-              <div className={`msg ${m.role}`}>
+          {currentConvo?.messages.map((msg, idx) => (
+            <div key={msg.id}>
+              <div className={`msg ${msg.role}`}>
                 <div className="bubble">
-                  {m.content.split("\n").map((line, i) => (
-                    <p key={i}>{line}</p>
+                  {msg.content.split("\n").map((line, i) => (
+                    <p key={i}>{line || "\u00A0"}</p>
                   ))}
                 </div>
               </div>
 
-              {/* OPTIONAL: Carousel after the very first assistant greeting */}
-              {m.role === "assistant" && idx === 0 && (
+              {/* Show products after first assistant message */}
+              {msg.role === "assistant" && idx === 0 && (
                 <div style={{ margin: "20px 0" }}>
-                  <Carousel ariaLabel="Suggested products" gap={20} padX={8}>
-                    {products.map((p, i) => (
+                  <Carousel ariaLabel="Featured products" gap={20} padX={8}>
+                    {products.map((product, i) => (
                       <ProductCard
                         key={i}
-                        imageSrc={p.imageSrc}
-                        title={p.title}
-                        price={p.price}
-                        rating={p.rating}
-                        reviews={p.reviews}
+                        imageSrc={product.imageSrc}
+                        title={product.title}
+                        price={product.price}
+                        rating={product.rating}
+                        reviews={product.reviews}
                       />
                     ))}
                   </Carousel>
@@ -241,21 +249,35 @@ export default function ChatPage() {
               )}
             </div>
           ))}
+          
+          {sending && (
+            <div className="msg assistant">
+              <div className="bubble typing">
+                <span>●</span><span>●</span><span>●</span>
+              </div>
+            </div>
+          )}
+          
           <div ref={endRef} />
-          <div style={{ height: 96 }} />
         </div>
 
-        {/* Composer pinned at bottom */}
+        {/* Input area */}
         <div className="chat-input-wrap">
           <div className="chat-input">
             <textarea
-              placeholder='Type a message… (tip: try "/open 2")'
+              placeholder="I need the best tent for the rugged outdoors, under $200."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
+              disabled={sending}
+              rows={1}
             />
-            <button className="send-btn" onClick={send} disabled={sending || !input.trim()}>
-              {sending ? "…" : "Send"}
+            <button 
+              className="send-btn" 
+              onClick={send} 
+              disabled={sending || !input.trim()}
+            >
+              {sending ? "●●●" : "Send"}
             </button>
           </div>
         </div>

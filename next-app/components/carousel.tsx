@@ -1,4 +1,3 @@
-// next-app/app/components/Carousel.tsx
 "use client";
 
 import { PropsWithChildren, useEffect, useRef, useState } from "react";

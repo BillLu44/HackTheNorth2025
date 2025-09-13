@@ -1,4 +1,3 @@
-// next-app/app/components/ProductCard.tsx
 "use client";
 
 export type ProductCardProps = {

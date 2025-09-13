@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-/* next-app/app/globals.css */
-
 /* ===== THEME VARIABLES ===== */
 
 /* Light defaults */
@@ -295,6 +293,19 @@ body,
 .chat-item:hover {
     filter: brightness(1.05);
     /* border-color: color-mix(in oklab, var(--c-border), var(--c-text) 20%); */
+}
+
+.chat-item.active {
+  background: linear-gradient(135deg, #667eeaf9 0%, #764ba2f9 100%);
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.chat-item.active:hover {
+  background: linear-gradient(135deg, #5a6fd8ec 0%, #6a4190ec 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .chat-main {
