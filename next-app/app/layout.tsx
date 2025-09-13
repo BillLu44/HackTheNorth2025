@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {/* Global top-right theme switcher */}
-        <div style={{ position: "fixed", bottom: 12, right: 12, zIndex: 50 }}>
+        <div style={{ position: "fixed", bottom: 12, left: 72, zIndex: 50 }}>
           <ThemeToggle />
         </div>
         {children}

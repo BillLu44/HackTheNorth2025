@@ -69,6 +69,31 @@ html[data-theme="dark"] {
     --bubble-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-btn-border) var(--c-bg);
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--c-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--c-btn-border);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--c-btn-border);
+}
+
+
 /* Base application surfaces pick up the variables */
 html,
 body {
@@ -272,6 +297,7 @@ body,
 .chat-main {
     display: grid;
     grid-template-rows: auto 1fr auto;
+    max-height: 100vh;
 }
 
 .chat-topbar {
@@ -341,7 +367,8 @@ body,
     background: transparent;
     border: none;
     color: var(--c-text);
-    height: 48px;
+    height: auto;
+    max-height: 60px;
     outline: none;
     padding: 6px 8px;
 }
@@ -435,15 +462,20 @@ body,
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    /* IE/Edge */
+    scrollbar-width: none;
 }
 
 .carousel-viewport::-webkit-scrollbar {
     height: 10px;
+    display: none;
 }
 
 .carousel-viewport::-webkit-scrollbar-thumb {
     background: var(--c-border);
     border-radius: 999px;
+    display: none;
 }
 
 .carousel-track {
