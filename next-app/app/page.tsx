@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Carousel from "./components/carousel";
-import ProductCard from "./components/product-card";
+import Carousel from "../components/carousel";
+import ProductCard from "../components/product-card";
 
 type Role = "user" | "assistant";
 type Message = { id: string; role: Role; content: string };
