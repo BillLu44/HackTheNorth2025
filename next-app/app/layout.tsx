@@ -69,9 +69,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        {/* Global top-right theme switcher */}
+        {/* Global bottom-right theme switcher */}
         <ThemeProvider>
-          <div style={{ position: "fixed", bottom: 12, left: 72, zIndex: 50 }}>
+          <div style={{ position: "fixed", bottom: 24, left: 24, zIndex: 50 }}>
             <ThemeToggle />
           </div>
           {children}

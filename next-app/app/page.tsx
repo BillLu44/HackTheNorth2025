@@ -32,7 +32,7 @@ const generateId = () => {
 const GREETING: Message = {
   id: generateId(),
   role: "assistant",
-  content: "Hi! I'm your shopping assistant. Options to get you started:",
+  content: "Hi! I'm your shopping assistant. Ask me what you want to buy!",
 };
 
 const makeNewConversation = (): Conversation => ({
@@ -92,35 +92,46 @@ const generateChatTitle = async (userMessage: string): Promise<string> => {
 const LS_KEY = "wishlist_conversations";
 
 const LoadingSpinner = () => (
-  <div className="spinner-container">
-    <div className="spinner"></div>
+  <div className="modern-spinner">
+    <div className="spinner-dots">
+      <div className="dot"></div>
+      <div className="dot"></div>
+      <div className="dot"></div>
+    </div>
     <style jsx>{`
-      .spinner-container {
+      .modern-spinner {
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 8px;
       }
       
-      .spinner {
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(128, 128, 128, 0.3);
-        border-top: 2px solid #666;
+      .spinner-dots {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: var(--c-accent);
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: pulse-dot 1.4s ease-in-out infinite both;
       }
       
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
+      .dot:nth-child(1) { animation-delay: -0.32s; }
+      .dot:nth-child(2) { animation-delay: -0.16s; }
+      .dot:nth-child(3) { animation-delay: 0s; }
       
-      /* Dark theme spinner */
-      @media (prefers-color-scheme: dark) {
-        .spinner {
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top: 2px solid #ccc;
+      @keyframes pulse-dot {
+        0%, 80%, 100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1.2);
+          opacity: 1;
         }
       }
     `}</style>
@@ -435,24 +446,31 @@ export default function ChatPage() {
 
               {/* Show products for assistant messages that have products */}
               {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
-                <div style={{ margin: "20px 0" }}>
-                  <Carousel ariaLabel="Featured products" gap={20} padX={8}>
-                    {msg.products.map((product, i) => (
-                      <ProductCard
-                        key={i}
-                        imageSrc={product.image_url}
-                        title={product.product_name}
-                        price={product.price_str}
-                        priceRange={product.price_range}
-                        category={product.category}
-                        siteName={product.site_name}
-                        rating={product.rating}
-                        reviews={product.review_count}
-                        summary={product.description}
-                        url={product.product_url}
-                      />
-                    ))}
-                  </Carousel>
+                <div style={{ 
+                  margin: "20px 0", 
+                  display: "flex", 
+                  justifyContent: "center", 
+                  gap: "20px", 
+                  flexWrap: "wrap",
+                  maxWidth: "1000px",
+                  marginLeft: "auto",
+                  marginRight: "auto"
+                }}>
+                  {msg.products.slice(0, 3).map((product, i) => (
+                    <ProductCard
+                      key={i}
+                      imageSrc={product.image_url}
+                      title={product.product_name}
+                      price={product.price_str}
+                      priceRange={product.price_range}
+                      category={product.category}
+                      siteName={product.site_name}
+                      rating={product.rating}
+                      reviews={product.review_count}
+                      summary={product.description}
+                      url={product.product_url}
+                    />
+                  ))}
                 </div>
               )}
             </div>

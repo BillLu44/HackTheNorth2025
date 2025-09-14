@@ -37,13 +37,25 @@ export default function Carousel({
     const ro = new ResizeObserver(updateEnds);
     ro.observe(el);
 
+    // Horizontal scroll wheel support
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        // Already horizontal scroll, let it through
+        return;
+      }
+      
+      // Convert vertical scroll to horizontal
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+
     // Pointer drag
     let isDown = false;
     let startX = 0;
     let startLeft = 0;
 
     const onDown = (e: PointerEvent) => {
-      // 🚫 Don’t start dragging if the pointer target is an interactive child
+      // 🚫 Don't start dragging if the pointer target is an interactive child
       if (e.target instanceof Element && e.target.closest('[data-interactive="true"]')) return;
       // Only left mouse (or touch/pen)
       if (e.pointerType === "mouse" && e.button !== 0) return;
@@ -68,6 +80,7 @@ export default function Carousel({
       el.classList.remove("carousel-dragging");
     };
 
+    el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerup", onUp);
@@ -75,6 +88,7 @@ export default function Carousel({
 
     return () => {
       el.removeEventListener("scroll", updateEnds);
+      el.removeEventListener("wheel", onWheel);
       ro.disconnect();
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
