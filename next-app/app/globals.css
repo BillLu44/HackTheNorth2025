@@ -344,6 +344,86 @@ body,
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+
+.pcard-back-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.pcard-back-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-accent);
+  margin: 8px 0 12px 0;
+  text-align: center;
+}
+
+.pcard-back-description {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--c-text);
+  text-align: left;
+  padding: 16px;
+  background: var(--c-surface);
+  border-radius: 8px;
+  border: 1px solid var(--c-border);
+  flex: 1;
+  margin: 0;
+  overflow-y: auto;
+}
+
+.pcard-back-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pcard-back-text {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  margin: 0;
+}
+
+.pcard-highlight {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.pcard-back-link {
+  margin-top: 8px;
+}
+
+.pcard-back-link a {
+  color: var(--c-accent);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  background: var(--c-accent-light);
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.pcard-back-link a:hover {
+  background: var(--c-accent);
+  color: white;
+}
+
+.pcard-back-hint {
+  font-size: 10px;
+  color: var(--c-text-muted);
+  text-align: center;
+  margin: 8px 0 0 0;
+  opacity: 0.6;
+  font-style: italic;
+}
+
 .chat-sidebar {
     background: var(--gradient-surface);
     border-right: 1px solid var(--c-border);
@@ -881,8 +961,12 @@ body,
   box-shadow: 0 20px 40px var(--c-shadow-xl);
 }
 
-.pcard.is-flipped { 
-  transform: rotateY(180deg) scale(1.05) translateY(-8px);
+.pcard.is-flipped .pcard-front {
+  transform: rotateY(-180deg);
+}
+
+.pcard.is-flipped .pcard-back {
+  transform: rotateY(0deg);
 }
 
 .pcard-face {
@@ -905,9 +989,15 @@ body,
   z-index: 2;
 }
 
-.pcard-back  { 
-  transform: rotateY(180deg); 
-  align-content: start;
+.pcard-back {
+  transform: rotateY(180deg);
+  background: var(--c-surface-elevated);
+  border: 1px solid var(--c-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
   z-index: 1;
 }
 
@@ -978,6 +1068,14 @@ body,
   text-overflow: ellipsis;
   margin-bottom: 12px;
   max-height: 32px;
+}
+
+.pcard-price-main {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-accent);
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 .pcard-meta  { 

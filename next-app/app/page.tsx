@@ -326,11 +326,38 @@ export default function ChatPage() {
       console.log('Frontend - Final productArray:', productArray);
       console.log('Frontend - Final productArray length:', productArray?.length);
 
+      // Generate AI descriptions for products
+      const productsWithDescriptions = await Promise.all(
+        (productArray || []).map(async (product: any) => {
+          try {
+            const descResponse = await fetch('/api/cohere', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                message: product.product_name,
+                product: product,
+                type: 'description'
+              }),
+            });
+            
+            if (descResponse.ok) {
+              const { description } = await descResponse.json();
+              return { ...product, cohereDescription: description };
+            }
+          } catch (error) {
+            console.error('Error generating description for product:', error);
+          }
+          return product;
+        })
+      );
+
       const assistantMsg: Message = {
         id: generateId(),
         role: "assistant",
         content: assistantContent,
-        products: productArray || [], // Store products in the message
+        products: productsWithDescriptions || [], // Store products with AI descriptions
       };
 
       const finalConvo = {
@@ -469,6 +496,7 @@ export default function ChatPage() {
                       reviews={product.review_count}
                       summary={product.description}
                       url={product.product_url}
+                      cohereDescription={product.cohereDescription}
                     />
                   ))}
                 </div>
@@ -492,7 +520,7 @@ export default function ChatPage() {
           <div className="chat-input">
             <textarea
               className={highlightInput ? "highlight-border" : ""}
-              placeholder="I need the best tent for the rugged outdoors, under $200."
+              placeholder="Eg. I need the best tent for the rugged outdoors, under $200."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}

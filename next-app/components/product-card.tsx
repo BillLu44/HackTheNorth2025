@@ -15,6 +15,7 @@ export type ProductCardProps = {
   reviews: string;
   summary: string;
   url?: string;
+  cohereDescription?: string;
 };
 
 export default function ProductCard({
@@ -29,6 +30,7 @@ export default function ProductCard({
   reviews,
   summary,
   url,
+  cohereDescription,
 }: ProductCardProps) {
   const [flipped, setFlipped] = useState(false);
   const toggle = () => setFlipped((v) => !v);
@@ -40,12 +42,10 @@ export default function ProductCard({
     e.stopPropagation();
   };
 
-  // Flip on left mouse or tap
-  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === "mouse") {
-      const btn = (e as any).button ?? 0;
-      if (btn !== 0) return; // only left click
-    }
+  // Flip on click
+  const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     toggle();
   };
 
@@ -65,10 +65,9 @@ export default function ProductCard({
       aria-pressed={flipped}
       aria-label={flipped ? "Show front" : "Show details"}
       data-interactive="true"
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
+      onClick={onClick}
       onKeyDown={onKeyDown}
-      onContextMenu={(e) => e.preventDefault()}
+      style={{ cursor: 'pointer' }}
     >
       {/* FRONT */}
       <div className="pcard-face pcard-front">
@@ -81,9 +80,8 @@ export default function ProductCard({
           />
         </div>
         <h3 className="pcard-title">{title}</h3>
+        <div className="pcard-price-main">{price ? price.replace(/^\$?(\d+)\.?$/, '$$$1') : "N/A"}</div>
         <div className="pcard-meta">
-          <span className="pcard-price">{price || "Price not available"}</span>
-          <span className="pcard-dot">•</span>
           <span className="pcard-rating"><span className="text-yellow-300">★</span>{Number(rating).toFixed(1)}</span>
           <span className="pcard-dot">•</span>
           <span className="pcard-reviews">{reviews} reviews</span>
@@ -92,15 +90,14 @@ export default function ProductCard({
 
       {/* BACK */}
       <div className="pcard-face pcard-back">
-        <h4 className="pcard-back-title !font-medium text-[color:var(--c-text-secondary)]">{summary}</h4>
-        <p className="pcard-back-text">price range: <span className="text-[color:var(--c-text)] italic font-semibold">{priceRange || price || "Not specified"}</span></p>
-        <p className="pcard-back-text">shopping category: <span className="text-[color:var(--c-text)] italic font-semibold">{category}</span></p>
-        <p className="pcard-back-text">from: <span className="text-[color:var(--c-text)] italic font-semibold">{siteName}</span> </p>
-        <div className="pcard-back-link">
-          <ReactMarkdown>{markdown}</ReactMarkdown>
+        <div className="pcard-back-content">
+          <h4 className="pcard-back-title">Summary</h4>
+          <p className="pcard-back-description">
+            {cohereDescription || "Generating AI summary..."}
+          </p>
         </div>
         <p className="pcard-back-hint">
-          Click again or press Enter/Space to flip back.
+          Click to flip back
         </p>
       </div>
     </div>
