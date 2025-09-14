@@ -1,0 +1,57 @@
+[
+  {
+    "category": "Electronics",
+    "current_price": 129.99,
+    "description": "Wireless noise-cancelling headphones with 30 hours of battery life.",
+    "price_range": "$100 - $150",
+    "product_name": "SoundMax Pro Headphones",
+    "product_url": "https://store.example.com/soundmax-pro-headphones",
+    "rating": 4.5,
+    "review_count": 328,
+    "site_name": "Example Store"
+  },
+  {
+    "category": "Books",
+    "current_price": 14.99,
+    "description": "A thrilling mystery novel that keeps you hooked until the last page.",
+    "price_range": "$10 - $20",
+    "product_name": "The Silent Watcher",
+    "product_url": "https://store.example.com/the-silent-watcher",
+    "rating": 4.2,
+    "review_count": 112,
+    "site_name": "Example Store"
+  },
+  {
+    "category": "Home & Kitchen",
+    "current_price": 39.95,
+    "description": "12-piece non-stick cookware set, oven safe up to 400°F.",
+    "price_range": "$30 - $50",
+    "product_name": "ChefMaster Cookware Set",
+    "product_url": "https://store.example.com/chefmaster-cookware",
+    "rating": 4.7,
+    "review_count": 580,
+    "site_name": "Example Store"
+  },
+  {
+    "category": "Clothing",
+    "current_price": null,
+    "description": "Classic unisex hoodie available in multiple colors and sizes.",
+    "price_range": "$25 - $40",
+    "product_name": "CozyWear Fleece Hoodie",
+    "product_url": "https://store.example.com/cozywear-hoodie",
+    "rating": 4.0,
+    "review_count": 245,
+    "site_name": "Example Store"
+  },
+  {
+    "category": "Sports & Outdoors",
+    "current_price": 299.0,
+    "description": "Durable mountain bike with 21-speed gear system and lightweight frame.",
+    "price_range": "$250 - $350",
+    "product_name": "TrailBlazer Mountain Bike",
+    "product_url": "https://store.example.com/trailblazer-bike",
+    "rating": 4.6,
+    "review_count": 97,
+    "site_name": "Example Store"
+  }
+]

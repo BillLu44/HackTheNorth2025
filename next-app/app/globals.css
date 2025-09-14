@@ -105,8 +105,16 @@ body {
     background: var(--c-bg);
 }
 
-/* Example helpers (OPTIONAL):
-   If you used hard-coded colors earlier, you can gradually swap them: */
+@keyframes border-shine {
+  0% { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+  50% { border-color: #60a5fa; box-shadow: 0 0 15px rgba(59, 130, 246, 0.8); }
+  100% { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+}
+
+.highlight-border {
+  animation: border-shine 1s ease-in-out 3;
+  border: 2px solid #0a53c89f !important;
+}
 
 .card {
     background: var(--c-surface);

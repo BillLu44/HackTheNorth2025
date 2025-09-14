@@ -22,7 +22,7 @@ const generateId = () =>
 const GREETING: Message = {
   id: generateId(),
   role: "assistant",
-  content: "Hi! I'm your shopping assistant. These options may interest you:",
+  content: "Hi! I'm your shopping assistant. Options to get you started:",
 };
 
 const makeNewConversation = (): Conversation => ({
@@ -52,13 +52,43 @@ const storage = {
   },
 };
 
+// Generate chat title using Cohere API
+const generateChatTitle = async (userMessage: string): Promise<string> => {
+  try {
+    const response = await fetch("/api/cohere", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: userMessage }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to generate title");
+    }
+
+    const { title } = await response.json();
+    return title || `Shopping for ${userMessage.slice(0, 30)}...`;
+  } catch (error) {
+    console.error("Error generating title:", error);
+    // Fallback to simple title generation
+    const words = userMessage.trim().split(" ").slice(0, 4);
+    return `Shopping for ${words.join(" ")}${
+      words.length < userMessage.split(" ").length ? "..." : ""
+    }`;
+  }
+};
+
 const LS_KEY = "wishlist_conversations";
 
 export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConvoId, setCurrentConvoId] = useState<string>("");
+  const [currentConvo, setCurrentConvo] = useState<Conversation | null>(null);
+  const [isTemporaryChat, setIsTemporaryChat] = useState(false);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [highlightInput, setHighlightInput] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
@@ -70,18 +100,24 @@ export default function ChatPage() {
     if (stored) {
       try {
         loadedConvos = JSON.parse(stored);
-        if (!Array.isArray(loadedConvos) || loadedConvos.length === 0) {
-          loadedConvos = [makeNewConversation()];
+        if (!Array.isArray(loadedConvos)) {
+          loadedConvos = [];
         }
       } catch {
-        loadedConvos = [makeNewConversation()];
+        loadedConvos = [];
       }
-    } else {
-      loadedConvos = [makeNewConversation()];
     }
 
     setConversations(loadedConvos);
-    setCurrentConvoId(loadedConvos[0].id);
+
+    // If no conversations exist, start with a temporary one
+    if (loadedConvos.length === 0) {
+      setCurrentConvo(makeNewConversation());
+      setIsTemporaryChat(true);
+    } else {
+      setCurrentConvo(loadedConvos[0]);
+      setIsTemporaryChat(false);
+    }
   }, []);
 
   // Save conversations to localStorage
@@ -94,25 +130,63 @@ export default function ChatPage() {
   // Auto-scroll to bottom
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversations, currentConvoId]);
-
-  const currentConvo =
-    conversations.find((c) => c.id === currentConvoId) || conversations[0];
+  }, [currentConvo]);
 
   const newChat = () => {
     const newConvo = makeNewConversation();
-    setConversations((prev) => [newConvo, ...prev]);
-    setCurrentConvoId(newConvo.id);
+    setCurrentConvo(newConvo);
+    setIsTemporaryChat(true);
     setInput("");
+
+    // Trigger highlight animation
+    setHighlightInput(true);
+    setTimeout(() => setHighlightInput(false), 2000);
   };
 
   const switchConversation = (id: string) => {
-    setCurrentConvoId(id);
+    const convo = conversations.find((c) => c.id === id);
+    if (convo) {
+      setCurrentConvo(convo);
+      setIsTemporaryChat(false);
+    }
+  };
+
+  const saveTemporaryChat = async (
+    convo: Conversation,
+    firstUserMessage: string
+  ) => {
+    setGeneratingTitle(true);
+
+    // Generate title based on first user message
+    const title = await generateChatTitle(firstUserMessage);
+
+    const savedConvo = {
+      ...convo,
+      title,
+      updatedAt: Date.now(),
+    };
+
+    // Add to conversations list
+    setConversations((prev) => [savedConvo, ...prev]);
+    setCurrentConvo(savedConvo);
+    setIsTemporaryChat(false);
+    setGeneratingTitle(false);
+  };
+
+  const updateConversation = (updatedConvo: Conversation) => {
+    if (isTemporaryChat) {
+      setCurrentConvo(updatedConvo);
+    } else {
+      setConversations((prev) =>
+        prev.map((c) => (c.id === updatedConvo.id ? updatedConvo : c))
+      );
+      setCurrentConvo(updatedConvo);
+    }
   };
 
   const send = async () => {
     const text = input.trim();
-    if (!text || sending) return;
+    if (!text || sending || !currentConvo) return;
 
     const userMsg: Message = {
       id: generateId(),
@@ -120,14 +194,21 @@ export default function ChatPage() {
       content: text,
     };
 
-    // Add user message
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === currentConvoId
-          ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
-          : c
-      )
-    );
+    const updatedConvo = {
+      ...currentConvo,
+      messages: [...currentConvo.messages, userMsg],
+      updatedAt: Date.now(),
+    };
+
+    // If this is a temporary chat and it's the first user message, save it
+    const isFirstUserMessage =
+      isTemporaryChat && currentConvo.messages.length === 1;
+
+    if (isFirstUserMessage) {
+      await saveTemporaryChat(updatedConvo, text);
+    } else {
+      updateConversation(updatedConvo);
+    }
 
     setInput("");
     setSending(true);
@@ -148,20 +229,15 @@ export default function ChatPage() {
         content: responses[Math.floor(Math.random() * responses.length)],
       };
 
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === currentConvoId
-            ? {
-                ...c,
-                messages: [...c.messages, assistantMsg],
-                updatedAt: Date.now(),
-              }
-            : c
-        )
-      );
+      const finalConvo = {
+        ...updatedConvo,
+        messages: [...updatedConvo.messages, assistantMsg],
+        updatedAt: Date.now(),
+      };
 
+      updateConversation(finalConvo);
       setSending(false);
-    }, 1000 + Math.random() * 1000); // Random delay for realism
+    }, 1000 + Math.random() * 1000);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -224,17 +300,21 @@ export default function ChatPage() {
 
         <div className="chat-list">
           {conversations.map((convo, idx) => {
-            const isActive = convo.id === currentConvoId;
-            const label = `Chat ${conversations.length - idx}`;
+            const isActive = currentConvo?.id === convo.id;
+            const displayTitle =
+              generatingTitle && isActive
+                ? "Generating title..."
+                : convo.title || `Chat ${conversations.length - idx}`;
 
             return (
               <button
                 key={convo.id}
                 className={`chat-item ${isActive ? "active" : ""}`}
                 onClick={() => switchConversation(convo.id)}
-                title={label}
+                title={displayTitle}
+                disabled={generatingTitle && isActive}
               >
-                {label}
+                {displayTitle}
               </button>
             );
           })}
@@ -244,7 +324,6 @@ export default function ChatPage() {
       {/* Main chat area */}
       <section className="chat-main">
         <header className="chat-topbar">
-          {/* Theme-aware icon */}
           <picture>
             {theme == "light" ? (
               <>
@@ -323,6 +402,7 @@ export default function ChatPage() {
         <div className="chat-input-wrap">
           <div className="chat-input">
             <textarea
+              className={highlightInput ? "highlight-border" : ""}
               placeholder="I need the best tent for the rugged outdoors, under $200."
               value={input}
               onChange={(e) => setInput(e.target.value)}
