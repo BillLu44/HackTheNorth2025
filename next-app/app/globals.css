@@ -111,7 +111,7 @@ body {
 .card {
     background: var(--c-surface);
     border: 1px solid var(--c-border);
-    box-shadow: 0 10px 30px var(--c-shadow);
+    /* box-shadow: 0 10px 30px var(--c-shadow); */
 }
 
 .panel {
@@ -197,7 +197,7 @@ body,
     border: 1px solid var(--c-border);
     border-radius: 16px;
     background: linear-gradient(180deg, var(--c-surface), var(--c-panel));
-    box-shadow: 0 10px 40px var(--c-shadow);
+    /* box-shadow: 0 10px 40px var(--c-shadow); */
     overflow: hidden;
 }
 
@@ -296,16 +296,16 @@ body,
 }
 
 .chat-item.active {
-  background: linear-gradient(135deg, #667eeaf9 0%, #764ba2f9 100%);
-  color: white;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    /* background: linear-gradient(135deg, #667eeaf9 0%, #764ba2f9 100%); */
+    color: var(--c-text);
+    font-weight: 500;
+    /* box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); */
 }
 
 .chat-item.active:hover {
-  background: linear-gradient(135deg, #5a6fd8ec 0%, #6a4190ec 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    /* background: linear-gradient(135deg, #5a6fd8ec 0%, #6a4190ec 100%); */
+    transform: translateY(-1px);
+    /* box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); */
 }
 
 .chat-main {
@@ -430,7 +430,7 @@ body,
     background: var(--bubble-user-bg);
     border: 1px solid var(--bubble-user-border);
     color: var(--c-text);
-    box-shadow: var(--bubble-shadow);
+    /* box-shadow: var(--bubble-shadow); */
     line-height: 1.55;
     font-size: 14px;
 }
@@ -517,7 +517,7 @@ body,
     color: var(--c-text);
     display: grid;
     place-items: center;
-    box-shadow: 0 6px 16px var(--c-shadow);
+    /* box-shadow: 0 6px 16px var(--c-shadow); */
     cursor: pointer;
     z-index: 2;
 }
@@ -540,59 +540,79 @@ body,
     cursor: grabbing;
 }
 
-/* ===== Product Card ===== */
-.pcard {
-    width: min(360px, 86vw);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 18px;
-    padding: 14px;
-    box-shadow: 0 10px 24px var(--c-shadow);
-    height: 100%;
+/* Allow scaled cards to breathe inside the carousel */
+.carousel { overflow: visible; }                     /* safe */
+.carousel-viewport {
+  overflow-x: auto;                                  /* keep horizontal scrolling */
+  overflow-y: visible;                               /* <-- stop vertical clipping */
+  padding-top: 16px;                                 /* room for 1.05 scale */
+  padding-bottom: 16px;
 }
+
+/* Ensure hovered card can rise above neighbors */
+.carousel-item { position: relative; }
+.pcard       { will-change: transform; }
+.pcard:hover { z-index: 3; }                         /* render above siblings */
+
+
+/* ==== Product Card (simplified) ==== */
+.pcard {
+  width: min(360px, 86vw);
+  height: 100%;
+  perspective: 1000px;
+  border-radius: 18px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.25,.8,.25,1);
+}
+.pcard:hover {
+  transform: scale(1.05);
+  /* box-shadow: 0 16px 34px var(--c-shadow); */
+}
+.pcard.is-flipped { transform: rotateY(180deg); }
+
+.pcard-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 18px;
+  padding: 14px;
+  /* box-shadow: 0 10px 24px var(--c-shadow); */
+  backface-visibility: hidden;
+}
+.pcard-front { transform: rotateY(0); }
+.pcard-back  { transform: rotateY(180deg); align-content: start; }
 
 .pcard-imgwrap {
-    border-radius: 16px;
-    overflow: hidden;
-    background: var(--c-panel);
-    height: 65%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--c-panel);
 }
-
 .pcard-img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
-.pcard-title {
-    margin-top: 14px;
-    font-size: 14px;
-    line-height: 1.35; 
-    color: var(--c-text);
-}
+.pcard-title { font-size: 16px; font-weight: 600; color: var(--c-text); }
+.pcard-meta  { display: flex; gap: 8px; font-size: 14px; color: var(--c-text); }
+.pcard-price { font-weight: 600; }
+.pcard-dot   { opacity: .6; }
+.pcard-reviews { opacity: .7; }
 
-.pcard-meta {
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--c-text);
-    font-size: 14px;
-}
+.pcard-back-title { font-size: 15px; font-weight: 700; }
+.pcard-back-text  { line-height: 1.5; }
+.pcard-back-hint  { font-size: 12px; color: var(--c-text-secondary); }
 
-.pcard-price {
-    font-weight: 600;
-}
+/* Improve click/tap reliability on transformed element */
+.pcard { -webkit-tap-highlight-color: transparent; user-select: none; }
+.pcard .pcard-face { cursor: inherit; } /* ensure children don't override pointer */
 
-.pcard-dot {
-    opacity: .6;
-}
 
-.pcard-rating .pcard-star {
-    margin-left: 2px;
-}
-
-.pcard-reviews {
-    opacity: .7;
+@media (prefers-reduced-motion: reduce) {
+  .pcard { transition: none !important; }
 }

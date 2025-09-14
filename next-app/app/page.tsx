@@ -161,25 +161,34 @@ export default function ChatPage() {
   // Demo products
   const products = [
     {
-      imageSrc: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=300&fit=crop",
+      imageSrc: "https://sharkninja-sfcc-prod-res.cloudinary.com/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,g_north,h_800,q_auto,w_800/c_pad,h_800,w_800/v1/SharkNinja-NA/CM360C_01?pgw=1&_i=AG",
       title: "Ninja Hot & Iced XL Coffee Maker",
       price: "$179.99",
       rating: 4.7,
       reviews: "8K",
+      summary: "Brews everything from a single-serve cup, to a travel mug—no pods required.",
+      details: "50Oz Reservoir/10 cup carafe\n6 Sizes: Cup/XL cup/Travel/XL Travel/1/2 Carafe/Full Carafe\n4 Brew Styles: Classic/Rich/Over Ice/Cold Brew",
+      url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html"
     },
     {
-      imageSrc: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=300&h=300&fit=crop",
-      title: "Premium Coffee Beans - Dark Roast",
-      price: "$24.99",
+      imageSrc: "https://kickinghorsecoffee.ca/cdn/shop/files/Kicking_Horse_Coffee_Grizzly_Claw_Whole_Bean_454g_EN.webp?v=1749057974&width=1220",
+      title: "Premium Organic Arabica Coffee Beans - Dark Roast",
+      price: "$22.99",
       rating: 4.8,
       reviews: "2K",
+      summary: "A full body bean hailing from Central & South America",
+      details: "Condensed sugar cane and cocoa powder aromas.\nRich, dark chocolate, cacao nibs, brown sugar and roasted hazelnut.",
+      url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652"
     },
     {
-      imageSrc: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=300&h=300&fit=crop",
-      title: "Ceramic Coffee Mug Set",
+      imageSrc: "https://m.media-amazon.com/images/I/716wiYCPtqL._AC_SL1500_.jpg",
+      title: "Ceramic Coffee Mug Set (4)",
       price: "$39.99",
-      rating: 4.6,
-      reviews: "1.2K",
+      rating: 4.5,
+      reviews: "289",
+      summary: "A brief overview of the product",
+      details: "Stylish 450ml ceramic mug, microwave/dishwasher safe, durable, comfy to hold, and beautifully packaged—perfect for gifting.",
+      url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?"
     },
   ];
 
@@ -242,6 +251,8 @@ export default function ChatPage() {
                         price={product.price}
                         rating={product.rating}
                         reviews={product.reviews}
+                        summary={product.summary}
+                        details={product.details}
                       />
                     ))}
                   </Carousel>
