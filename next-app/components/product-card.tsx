@@ -92,7 +92,7 @@ export default function ProductCard({
 
       {/* BACK */}
       <div className="pcard-face pcard-back">
-        <h4 className="pcard-back-title font-medium! text-[color:var(--c-text-secondary)]">{summary}</h4>
+        <h4 className="pcard-back-title !font-medium text-[color:var(--c-text-secondary)]">{summary}</h4>
         <p className="pcard-back-text">price range: <span className="text-[color:var(--c-text)] italic font-semibold">{priceRange}</span></p>
         <p className="pcard-back-text">shopping category: <span className="text-[color:var(--c-text)] italic font-semibold">{category}</span></p>
         <p className="pcard-back-text">from: <span className="text-[color:var(--c-text)] italic font-semibold">{siteName}</span> </p>

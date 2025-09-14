@@ -7,7 +7,12 @@ import Carousel from "../components/carousel";
 import ProductCard from "../components/product-card";
 
 type Role = "user" | "assistant";
-type Message = { id: string; role: Role; content: string };
+type Message = { 
+  id: string; 
+  role: Role; 
+  content: string;
+  products?: any[];
+};
 type Conversation = {
   id: string;
   messages: Message[];
@@ -16,8 +21,13 @@ type Conversation = {
   title?: string;
 };
 
-const generateId = () =>
-  Date.now().toString() + Math.random().toString(36).substr(2, 9);
+let idCounter = 0;
+const generateId = () => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  const counter = ++idCounter;
+  return `${timestamp}_${counter}_${random}`;
+};
 
 const GREETING: Message = {
   id: generateId(),
@@ -32,22 +42,22 @@ const makeNewConversation = (): Conversation => ({
   updatedAt: Date.now(),
 });
 
-// Simple localStorage wrapper with error handling
+// Simple in-memory storage for Claude.ai compatibility
 const storage = {
+  conversations: [] as Conversation[],
   get: (key: string) => {
-    if (typeof window === "undefined") return null;
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
+    if (key === LS_KEY) {
+      return JSON.stringify(storage.conversations);
     }
+    return null;
   },
   set: (key: string, value: string) => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Silently fail if localStorage is unavailable
+    if (key === LS_KEY) {
+      try {
+        storage.conversations = JSON.parse(value);
+      } catch {
+        storage.conversations = [];
+      }
     }
   },
 };
@@ -80,6 +90,42 @@ const generateChatTitle = async (userMessage: string): Promise<string> => {
 };
 
 const LS_KEY = "wishlist_conversations";
+
+const LoadingSpinner = () => (
+  <div className="spinner-container">
+    <div className="spinner"></div>
+    <style jsx>{`
+      .spinner-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+      }
+      
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(128, 128, 128, 0.3);
+        border-top: 2px solid #666;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Dark theme spinner */
+      @media (prefers-color-scheme: dark) {
+        .spinner {
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid #ccc;
+        }
+      }
+    `}</style>
+  </div>
+);
 
 export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -120,7 +166,7 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Save conversations to localStorage
+  // Save conversations to in-memory storage
   useEffect(() => {
     if (conversations.length > 0) {
       storage.set(LS_KEY, JSON.stringify(conversations));
@@ -213,20 +259,36 @@ export default function ChatPage() {
     setInput("");
     setSending(true);
 
-    // Simulate assistant response
-    setTimeout(() => {
-      const responses = [
-        "I'd be happy to help you find that! Let me search for some options...",
-        "Great choice! Here are some similar products you might like:",
-        "I found some excellent options for you. Would you like to see more details?",
-        "That's a popular item! Here are some recommendations based on your request:",
-        "I can help you with that. Let me show you what's available:",
-      ];
+    try {
+      // Call the search endpoint with user's query
+      const response = await fetch('http://localhost:5001/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: text }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const products = await response.json();
+
+      // Create response based on the products received
+      let assistantContent = "I found some great products for you! Here are the options:";
+      
+      if (products && products.length > 0) {
+        assistantContent = `I found ${products.length} products that might interest you. Take a look at these options!`;
+      } else {
+        assistantContent = "I searched our database but couldn't find any products matching your request at the moment. Please try a different search term.";
+      }
 
       const assistantMsg: Message = {
         id: generateId(),
         role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: assistantContent,
+        products: products || [], // Store products in the message
       };
 
       const finalConvo = {
@@ -237,7 +299,26 @@ export default function ChatPage() {
 
       updateConversation(finalConvo);
       setSending(false);
-    }, 1000 + Math.random() * 1000);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      
+      // Fallback response if API call fails
+      const errorMsg: Message = {
+        id: generateId(),
+        role: "assistant",
+        content: "I'm having trouble searching for products right now. Please try again in a moment.",
+        products: [], // Empty products array for failed requests
+      };
+
+      const finalConvo = {
+        ...updatedConvo,
+        messages: [...updatedConvo.messages, errorMsg],
+        updatedAt: Date.now(),
+      };
+
+      updateConversation(finalConvo);
+      setSending(false);
+    }
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -246,50 +327,6 @@ export default function ChatPage() {
       send();
     }
   };
-
-  // Demo products
-  const products = [
-    {
-      imageSrc:
-        "https://sharkninja-sfcc-prod-res.cloudinary.com/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,g_north,h_800,q_auto,w_800/c_pad,h_800,w_800/v1/SharkNinja-NA/CM360C_01?pgw=1&_i=AG",
-      product_name: "Ninja Hot & Iced XL Coffee Maker",
-      current_price: "$179.99",
-      price_range: "$0-1",
-      category: "test",
-      siteName: "walmart",
-      rating: 4.7,
-      review_count: "8K",
-      description:
-        "Brews everything from a single-serve cup, to a travel mug—no pods required.",
-      product_url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html",
-    },
-    {
-      imageSrc:
-        "https://kickinghorsecoffee.ca/cdn/shop/files/Kicking_Horse_Coffee_Grizzly_Claw_Whole_Bean_454g_EN.webp?v=1749057974&width=1220",
-      product_name: "Premium Organic Arabica Coffee Beans - Dark Roast",
-      current_price: "$22.99",
-      price_range: "$0-1",
-      category: "test",
-      siteName: "walmart",
-      rating: 4.8,
-      review_count: "2K",
-      description: "A full body bean hailing from Central & South America",
-      product_url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652",
-    },
-    {
-      imageSrc:
-        "https://m.media-amazon.com/images/I/716wiYCPtqL._AC_SL1500_.jpg",
-      product_name: "Ceramic Coffee Mug Set (4)",
-      current_price: "$39.99",
-      price_range: "$0-1",
-      category: "test",
-      siteName: "walmart",
-      rating: 4.5,
-      review_count: "289",
-      description: "A brief overview of the product",
-      product_url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?",
-    },
-  ];
 
   return (
     <div className="chat-shell">
@@ -365,11 +402,11 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              {/* Show products after first assistant message */}
-              {msg.role === "assistant" && idx === 0 && (
+              {/* Show products for assistant messages that have products */}
+              {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
                 <div style={{ margin: "20px 0" }}>
                   <Carousel ariaLabel="Featured products" gap={20} padX={8}>
-                    {products.map((product, i) => (
+                    {msg.products.map((product, i) => (
                       <ProductCard
                         key={i}
                         imageSrc={product.imageSrc}
@@ -392,10 +429,8 @@ export default function ChatPage() {
 
           {sending && (
             <div className="msg assistant">
-              <div className="bubble typing">
-                <span>●</span>
-                <span>●</span>
-                <span>●</span>
+              <div className="bubble">
+                <LoadingSpinner />
               </div>
             </div>
           )}
@@ -420,7 +455,7 @@ export default function ChatPage() {
               onClick={send}
               disabled={sending || !input.trim()}
             >
-              {sending ? "●●●" : "Send"}
+              {sending ? <LoadingSpinner /> : "Send"}
             </button>
           </div>
         </div>

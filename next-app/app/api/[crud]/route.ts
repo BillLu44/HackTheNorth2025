@@ -5,15 +5,13 @@ export async function GET(
   { params }: { params: Promise<{ crud: string }> }
 ) {
   const { crud } = await params;
-  const { searchParams } = new URL(request.url);
 
   try {
     switch (crud) {
       case "scan":
         const tableName = "shopping_products";
-        const keyParam = searchParams.get("key");
 
-        if (!tableName || !keyParam) {
+        if (!tableName) {
           return Response.json(
             { error: "tableName and key parameters are required" },
             { status: 400 }
