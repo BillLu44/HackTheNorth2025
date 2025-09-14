@@ -212,8 +212,11 @@ export default function ChatPage() {
       updatedAt: Date.now(),
     };
 
-    // Add to conversations list
-    setConversations((prev) => [savedConvo, ...prev]);
+    // Add to conversations list (prevent duplicates)
+    setConversations((prev) => {
+      const exists = prev.some(c => c.id === savedConvo.id);
+      return exists ? prev : [savedConvo, ...prev];
+    });
     setCurrentConvo(savedConvo);
     setIsTemporaryChat(false);
     setGeneratingTitle(false);
@@ -261,7 +264,7 @@ export default function ChatPage() {
 
     try {
       // Call the search endpoint with user's query
-      const response = await fetch('http://localhost:5001/search', {
+      const response = await fetch('/api/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -274,21 +277,49 @@ export default function ChatPage() {
       }
 
       const products = await response.json();
+      
+      // Debug: Log the products to see what we're getting
+      console.log('Frontend - Products received:', products);
+      console.log('Frontend - Products type:', typeof products);
+      console.log('Frontend - Is array:', Array.isArray(products));
+      console.log('Frontend - Products length:', products?.length);
+      
+      // If products is not an array, try to extract the array from the response
+      let productArray = products;
+      if (!Array.isArray(products)) {
+        console.log('Frontend - Products is not an array, checking for nested array...');
+        // Check if products has a property that contains the array
+        if (products && typeof products === 'object') {
+          const keys = Object.keys(products);
+          console.log('Frontend - Available keys:', keys);
+          // Look for common array property names
+          for (const key of ['products', 'items', 'results', 'data']) {
+            if (products[key] && Array.isArray(products[key])) {
+              console.log(`Frontend - Found array at key: ${key}`);
+              productArray = products[key];
+              break;
+            }
+          }
+        }
+      }
 
       // Create response based on the products received
       let assistantContent = "I found some great products for you! Here are the options:";
       
-      if (products && products.length > 0) {
-        assistantContent = `I found ${products.length} products that might interest you. Take a look at these options!`;
+      if (productArray && productArray.length > 0) {
+        assistantContent = `I found ${productArray.length} products that might interest you. Take a look at these options!`;
       } else {
         assistantContent = "I searched our database but couldn't find any products matching your request at the moment. Please try a different search term.";
       }
+
+      console.log('Frontend - Final productArray:', productArray);
+      console.log('Frontend - Final productArray length:', productArray?.length);
 
       const assistantMsg: Message = {
         id: generateId(),
         role: "assistant",
         content: assistantContent,
-        products: products || [], // Store products in the message
+        products: productArray || [], // Store products in the message
       };
 
       const finalConvo = {
@@ -348,7 +379,7 @@ export default function ChatPage() {
 
             return (
               <button
-                key={convo.id}
+                key={`${convo.id}-${idx}`}
                 className={`chat-item ${isActive ? "active" : ""}`}
                 onClick={() => switchConversation(convo.id)}
                 title={displayTitle}
@@ -409,12 +440,12 @@ export default function ChatPage() {
                     {msg.products.map((product, i) => (
                       <ProductCard
                         key={i}
-                        imageSrc={product.imageSrc}
+                        imageSrc={product.image_url}
                         title={product.product_name}
-                        price={product.current_price}
+                        price={product.price_str}
                         priceRange={product.price_range}
                         category={product.category}
-                        siteName={product.siteName}
+                        siteName={product.site_name}
                         rating={product.rating}
                         reviews={product.review_count}
                         summary={product.description}

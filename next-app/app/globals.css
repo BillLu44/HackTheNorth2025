@@ -512,7 +512,7 @@ body,
     flex: 0 0 auto;
     /* no shrinking */
     scroll-snap-align: start;
-    height: 30vh;
+    height: 70vh;
 }
 
 /* Arrows */
