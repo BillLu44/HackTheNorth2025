@@ -85,7 +85,9 @@ export default function ProductCard({
       <div className="pcard-face pcard-back">
         <h4 className="pcard-back-title">{summary}</h4>
         <p className="pcard-back-text">{details}</p>
-        <p className="pcard-back-link"><ReactMarkdown>{markdown}</ReactMarkdown></p>
+        <p className="pcard-back-link">
+          <ReactMarkdown>{markdown}</ReactMarkdown>
+          </p>
         <p className="pcard-back-hint">Click again or press Enter/Space to flip back.</p>
       </div>
     </div>

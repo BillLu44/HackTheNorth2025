@@ -197,7 +197,7 @@ body,
     border: 1px solid var(--c-border);
     border-radius: 16px;
     background: linear-gradient(180deg, var(--c-surface), var(--c-panel));
-    /* box-shadow: 0 10px 40px var(--c-shadow); */
+    box-shadow: 0 10px 40px var(--c-shadow);
     overflow: hidden;
 }
 
@@ -606,6 +606,7 @@ body,
 
 .pcard-back-title { font-size: 15px; font-weight: 700; }
 .pcard-back-text  { line-height: 1.5; }
+.pcard-back-link  { font-size: 12px; color: var(--c-text-secondary); visibility: visible }
 .pcard-back-hint  { font-size: 12px; color: var(--c-text-secondary); }
 
 /* Improve click/tap reliability on transformed element */

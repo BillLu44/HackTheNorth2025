@@ -253,6 +253,7 @@ export default function ChatPage() {
                         reviews={product.reviews}
                         summary={product.summary}
                         details={product.details}
+                        url={product.url}
                       />
                     ))}
                   </Carousel>
