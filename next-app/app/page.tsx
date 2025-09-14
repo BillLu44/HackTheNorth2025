@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "@/context/theme-context";
+import Image from "next/image";
 import Carousel from "../components/carousel";
 import ProductCard from "../components/product-card";
-import Image from "next/image";
 
 type Role = "user" | "assistant";
 type Message = { id: string; role: Role; content: string };
@@ -15,7 +16,8 @@ type Conversation = {
   title?: string;
 };
 
-const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
+const generateId = () =>
+  Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
 const GREETING: Message = {
   id: generateId(),
@@ -47,7 +49,7 @@ const storage = {
     } catch {
       // Silently fail if localStorage is unavailable
     }
-  }
+  },
 };
 
 const LS_KEY = "wishlist_conversations";
@@ -58,6 +60,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   // Initialize conversations
   useEffect(() => {
@@ -93,11 +96,12 @@ export default function ChatPage() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, currentConvoId]);
 
-  const currentConvo = conversations.find(c => c.id === currentConvoId) || conversations[0];
+  const currentConvo =
+    conversations.find((c) => c.id === currentConvoId) || conversations[0];
 
   const newChat = () => {
     const newConvo = makeNewConversation();
-    setConversations(prev => [newConvo, ...prev]);
+    setConversations((prev) => [newConvo, ...prev]);
     setCurrentConvoId(newConvo.id);
     setInput("");
   };
@@ -113,15 +117,17 @@ export default function ChatPage() {
     const userMsg: Message = {
       id: generateId(),
       role: "user",
-      content: text
+      content: text,
     };
 
     // Add user message
-    setConversations(prev => prev.map(c =>
-      c.id === currentConvoId
-        ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
-        : c
-    ));
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === currentConvoId
+          ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
+          : c
+      )
+    );
 
     setInput("");
     setSending(true);
@@ -133,7 +139,7 @@ export default function ChatPage() {
         "Great choice! Here are some similar products you might like:",
         "I found some excellent options for you. Would you like to see more details?",
         "That's a popular item! Here are some recommendations based on your request:",
-        "I can help you with that. Let me show you what's available:"
+        "I can help you with that. Let me show you what's available:",
       ];
 
       const assistantMsg: Message = {
@@ -142,11 +148,17 @@ export default function ChatPage() {
         content: responses[Math.floor(Math.random() * responses.length)],
       };
 
-      setConversations(prev => prev.map(c =>
-        c.id === currentConvoId
-          ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() }
-          : c
-      ));
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === currentConvoId
+            ? {
+                ...c,
+                messages: [...c.messages, assistantMsg],
+                updatedAt: Date.now(),
+              }
+            : c
+        )
+      );
 
       setSending(false);
     }, 1000 + Math.random() * 1000); // Random delay for realism
@@ -162,34 +174,41 @@ export default function ChatPage() {
   // Demo products
   const products = [
     {
-      imageSrc: "https://sharkninja-sfcc-prod-res.cloudinary.com/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,g_north,h_800,q_auto,w_800/c_pad,h_800,w_800/v1/SharkNinja-NA/CM360C_01?pgw=1&_i=AG",
+      imageSrc:
+        "https://sharkninja-sfcc-prod-res.cloudinary.com/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,g_north,h_800,q_auto,w_800/c_pad,h_800,w_800/v1/SharkNinja-NA/CM360C_01?pgw=1&_i=AG",
       title: "Ninja Hot & Iced XL Coffee Maker",
       price: "$179.99",
       rating: 4.7,
       reviews: "8K",
-      summary: "Brews everything from a single-serve cup, to a travel mug—no pods required.",
-      details: "50Oz Reservoir/10 cup carafe\n6 Sizes: Cup/XL cup/Travel/XL Travel/1/2 Carafe/Full Carafe\n4 Brew Styles: Classic/Rich/Over Ice/Cold Brew",
-      url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html"
+      summary:
+        "Brews everything from a single-serve cup, to a travel mug—no pods required.",
+      details:
+        "50Oz Reservoir/10 cup carafe\n6 Sizes: Cup/XL cup/Travel/XL Travel/1/2 Carafe/Full Carafe\n4 Brew Styles: Classic/Rich/Over Ice/Cold Brew",
+      url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html",
     },
     {
-      imageSrc: "https://kickinghorsecoffee.ca/cdn/shop/files/Kicking_Horse_Coffee_Grizzly_Claw_Whole_Bean_454g_EN.webp?v=1749057974&width=1220",
+      imageSrc:
+        "https://kickinghorsecoffee.ca/cdn/shop/files/Kicking_Horse_Coffee_Grizzly_Claw_Whole_Bean_454g_EN.webp?v=1749057974&width=1220",
       title: "Premium Organic Arabica Coffee Beans - Dark Roast",
       price: "$22.99",
       rating: 4.8,
       reviews: "2K",
       summary: "A full body bean hailing from Central & South America",
-      details: "Condensed sugar cane and cocoa powder aromas.\nRich, dark chocolate, cacao nibs, brown sugar and roasted hazelnut.",
-      url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652"
+      details:
+        "Condensed sugar cane and cocoa powder aromas.\nRich, dark chocolate, cacao nibs, brown sugar and roasted hazelnut.",
+      url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652",
     },
     {
-      imageSrc: "https://m.media-amazon.com/images/I/716wiYCPtqL._AC_SL1500_.jpg",
+      imageSrc:
+        "https://m.media-amazon.com/images/I/716wiYCPtqL._AC_SL1500_.jpg",
       title: "Ceramic Coffee Mug Set (4)",
       price: "$39.99",
       rating: 4.5,
       reviews: "289",
       summary: "A brief overview of the product",
-      details: "Stylish 450ml ceramic mug, microwave/dishwasher safe, durable, comfy to hold, and beautifully packaged—perfect for gifting.",
-      url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?"
+      details:
+        "Stylish 450ml ceramic mug, microwave/dishwasher safe, durable, comfy to hold, and beautifully packaged—perfect for gifting.",
+      url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?",
     },
   ];
 
@@ -197,19 +216,6 @@ export default function ChatPage() {
     <div className="chat-shell">
       {/* Sidebar */}
       <aside className="chat-sidebar">
-        {/* Theme-aware icon */}
-        <picture>
-          <source
-            srcSet="/wishlist-dark-32.png"
-          media="(prefers-color-scheme: dark)"
-          />
-          <img
-            src="/wishlist-light-32.png"
-            alt="Wishlist"
-            width={32}
-            height={32}
-          />
-        </picture>
         <h2>Your Wishlists</h2>
 
         <button className="btn chat-new" onClick={newChat}>
@@ -224,7 +230,7 @@ export default function ChatPage() {
             return (
               <button
                 key={convo.id}
-                className={`chat-item ${isActive ? 'active' : ''}`}
+                className={`chat-item ${isActive ? "active" : ""}`}
                 onClick={() => switchConversation(convo.id)}
                 title={label}
               >
@@ -238,6 +244,30 @@ export default function ChatPage() {
       {/* Main chat area */}
       <section className="chat-main">
         <header className="chat-topbar">
+          {/* Theme-aware icon */}
+          <picture>
+            {theme == "light" ? (
+              <>
+                <source srcSet="/wishlist-light-32.png" />
+                <Image
+                  src="/wishlist-dark-32.png"
+                  alt="Wishlist"
+                  width={32}
+                  height={32}
+                />
+              </>
+            ) : (
+              <>
+                <source srcSet="/wishlist-dark-32.png" />
+                <Image
+                  src="/wishlist-light-32.png"
+                  alt="Wishlist"
+                  width={32}
+                  height={32}
+                />
+              </>
+            )}
+          </picture>
           <div>Wishlist™</div>
           <div className="badge">Shopping Assistant</div>
         </header>
@@ -279,7 +309,9 @@ export default function ChatPage() {
           {sending && (
             <div className="msg assistant">
               <div className="bubble typing">
-                <span>●</span><span>●</span><span>●</span>
+                <span>●</span>
+                <span>●</span>
+                <span>●</span>
               </div>
             </div>
           )}

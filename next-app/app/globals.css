@@ -270,6 +270,7 @@ body,
     margin-bottom: 8px;
     font-weight: 500;
     background-color: var(--c-text-secondary);
+    opacity: 90%;
     color: var(--c-bg);
     width: 100%;
 }
