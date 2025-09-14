@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Carousel from "../components/carousel";
 import ProductCard from "../components/product-card";
+import Image from "next/image";
 
 type Role = "user" | "assistant";
 type Message = { id: string; role: Role; content: string };
@@ -62,7 +63,7 @@ export default function ChatPage() {
   useEffect(() => {
     const stored = storage.get(LS_KEY);
     let loadedConvos: Conversation[] = [];
-    
+
     if (stored) {
       try {
         loadedConvos = JSON.parse(stored);
@@ -75,7 +76,7 @@ export default function ChatPage() {
     } else {
       loadedConvos = [makeNewConversation()];
     }
-    
+
     setConversations(loadedConvos);
     setCurrentConvoId(loadedConvos[0].id);
   }, []);
@@ -109,15 +110,15 @@ export default function ChatPage() {
     const text = input.trim();
     if (!text || sending) return;
 
-    const userMsg: Message = { 
-      id: generateId(), 
-      role: "user", 
-      content: text 
+    const userMsg: Message = {
+      id: generateId(),
+      role: "user",
+      content: text
     };
 
     // Add user message
-    setConversations(prev => prev.map(c => 
-      c.id === currentConvoId 
+    setConversations(prev => prev.map(c =>
+      c.id === currentConvoId
         ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
         : c
     ));
@@ -134,19 +135,19 @@ export default function ChatPage() {
         "That's a popular item! Here are some recommendations based on your request:",
         "I can help you with that. Let me show you what's available:"
       ];
-      
+
       const assistantMsg: Message = {
         id: generateId(),
         role: "assistant",
         content: responses[Math.floor(Math.random() * responses.length)],
       };
-      
-      setConversations(prev => prev.map(c => 
-        c.id === currentConvoId 
+
+      setConversations(prev => prev.map(c =>
+        c.id === currentConvoId
           ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() }
           : c
       ));
-      
+
       setSending(false);
     }, 1000 + Math.random() * 1000); // Random delay for realism
   };
@@ -196,6 +197,19 @@ export default function ChatPage() {
     <div className="chat-shell">
       {/* Sidebar */}
       <aside className="chat-sidebar">
+        {/* Theme-aware icon */}
+        <picture>
+          <source
+            srcSet="/wishlist-dark-32.png"
+          media="(prefers-color-scheme: dark)"
+          />
+          <img
+            src="/wishlist-light-32.png"
+            alt="Wishlist"
+            width={32}
+            height={32}
+          />
+        </picture>
         <h2>Your Wishlists</h2>
 
         <button className="btn chat-new" onClick={newChat}>
@@ -206,7 +220,7 @@ export default function ChatPage() {
           {conversations.map((convo, idx) => {
             const isActive = convo.id === currentConvoId;
             const label = `Chat ${conversations.length - idx}`;
-            
+
             return (
               <button
                 key={convo.id}
@@ -261,7 +275,7 @@ export default function ChatPage() {
               )}
             </div>
           ))}
-          
+
           {sending && (
             <div className="msg assistant">
               <div className="bubble typing">
@@ -269,7 +283,7 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          
+
           <div ref={endRef} />
         </div>
 
@@ -284,9 +298,9 @@ export default function ChatPage() {
               disabled={sending}
               rows={1}
             />
-            <button 
-              className="send-btn" 
-              onClick={send} 
+            <button
+              className="send-btn"
+              onClick={send}
               disabled={sending || !input.trim()}
             >
               {sending ? "●●●" : "Send"}
