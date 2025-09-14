@@ -467,7 +467,6 @@ body,
     padding: 0 16px;
 }
 
-
 /* Centered “wishlist” style bubble */
 .bubble-row {
     display: grid;
@@ -477,8 +476,6 @@ body,
 .bubble-row.center {
     justify-items: center;
 }
-
-
 
 /* ===== Carousel ===== */
 .carousel {

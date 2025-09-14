@@ -252,39 +252,42 @@ export default function ChatPage() {
     {
       imageSrc:
         "https://sharkninja-sfcc-prod-res.cloudinary.com/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,g_north,h_800,q_auto,w_800/c_pad,h_800,w_800/v1/SharkNinja-NA/CM360C_01?pgw=1&_i=AG",
-      title: "Ninja Hot & Iced XL Coffee Maker",
-      price: "$179.99",
+      product_name: "Ninja Hot & Iced XL Coffee Maker",
+      current_price: "$179.99",
+      price_range: "$0-1",
+      category: "test",
+      siteName: "walmart",
       rating: 4.7,
-      reviews: "8K",
-      summary:
+      review_count: "8K",
+      description:
         "Brews everything from a single-serve cup, to a travel mug—no pods required.",
-      details:
-        "50Oz Reservoir/10 cup carafe\n6 Sizes: Cup/XL cup/Travel/XL Travel/1/2 Carafe/Full Carafe\n4 Brew Styles: Classic/Rich/Over Ice/Cold Brew",
-      url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html",
+      product_url: "https://www.sharkninja.ca/ninja-hot-iced-coffee-maker-with-rapid-cold-brew/CM360C.html",
     },
     {
       imageSrc:
         "https://kickinghorsecoffee.ca/cdn/shop/files/Kicking_Horse_Coffee_Grizzly_Claw_Whole_Bean_454g_EN.webp?v=1749057974&width=1220",
-      title: "Premium Organic Arabica Coffee Beans - Dark Roast",
-      price: "$22.99",
+      product_name: "Premium Organic Arabica Coffee Beans - Dark Roast",
+      current_price: "$22.99",
+      price_range: "$0-1",
+      category: "test",
+      siteName: "walmart",
       rating: 4.8,
-      reviews: "2K",
-      summary: "A full body bean hailing from Central & South America",
-      details:
-        "Condensed sugar cane and cocoa powder aromas.\nRich, dark chocolate, cacao nibs, brown sugar and roasted hazelnut.",
-      url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652",
+      review_count: "2K",
+      description: "A full body bean hailing from Central & South America",
+      product_url: "https://kickinghorsecoffee.ca/products/grizzly-claw-coffee?variant=41287019626652",
     },
     {
       imageSrc:
         "https://m.media-amazon.com/images/I/716wiYCPtqL._AC_SL1500_.jpg",
-      title: "Ceramic Coffee Mug Set (4)",
-      price: "$39.99",
+      product_name: "Ceramic Coffee Mug Set (4)",
+      current_price: "$39.99",
+      price_range: "$0-1",
+      category: "test",
+      siteName: "walmart",
       rating: 4.5,
-      reviews: "289",
-      summary: "A brief overview of the product",
-      details:
-        "Stylish 450ml ceramic mug, microwave/dishwasher safe, durable, comfy to hold, and beautifully packaged—perfect for gifting.",
-      url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?",
+      review_count: "289",
+      description: "A brief overview of the product",
+      product_url: "https://www.amazon.ca/MIAMIO-Ceramic-Dishwasher-Microwave-Collection/dp/B0CSK1XKS8?",
     },
   ];
 
@@ -370,13 +373,15 @@ export default function ChatPage() {
                       <ProductCard
                         key={i}
                         imageSrc={product.imageSrc}
-                        title={product.title}
-                        price={product.price}
+                        title={product.product_name}
+                        price={product.current_price}
+                        priceRange={product.price_range}
+                        category={product.category}
+                        siteName={product.siteName}
                         rating={product.rating}
-                        reviews={product.reviews}
-                        summary={product.summary}
-                        details={product.details}
-                        url={product.url}
+                        reviews={product.review_count}
+                        summary={product.description}
+                        url={product.product_url}
                       />
                     ))}
                   </Carousel>

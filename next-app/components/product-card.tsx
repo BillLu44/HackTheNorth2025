@@ -8,10 +8,12 @@ export type ProductCardProps = {
   imageAlt?: string;
   title: string;
   price: string;
+  priceRange: string;
+  category: string;
+  siteName: string;
   rating: number;
   reviews: string;
   summary: string;
-  details?: string;
   url?: string;
 };
 
@@ -20,10 +22,12 @@ export default function ProductCard({
   imageAlt = "",
   title,
   price,
+  priceRange,
+  category,
+  siteName,
   rating,
   reviews,
   summary,
-  details,
   url,
 }: ProductCardProps) {
   const [flipped, setFlipped] = useState(false);
@@ -80,16 +84,18 @@ export default function ProductCard({
         <div className="pcard-meta">
           <span className="pcard-price">{price}</span>
           <span className="pcard-dot">•</span>
-          <span className="pcard-rating">★ {rating.toFixed(1)}</span>
+          <span className="pcard-rating"><span className="text-yellow-300">★</span>{rating.toFixed(1)}</span>
           <span className="pcard-dot">•</span>
-          <span className="pcard-reviews">({reviews})</span>
+          <span className="pcard-reviews">{reviews} reviews</span>
         </div>
       </div>
 
       {/* BACK */}
       <div className="pcard-face pcard-back">
-        <h4 className="pcard-back-title">{summary}</h4>
-        <p className="pcard-back-text">{details}</p>
+        <h4 className="pcard-back-title font-medium! text-[color:var(--c-text-secondary)]">{summary}</h4>
+        <p className="pcard-back-text">price range: <span className="text-[color:var(--c-text)] italic font-semibold">{priceRange}</span></p>
+        <p className="pcard-back-text">shopping category: <span className="text-[color:var(--c-text)] italic font-semibold">{category}</span></p>
+        <p className="pcard-back-text">from: <span className="text-[color:var(--c-text)] italic font-semibold">{siteName}</span> </p>
         <div className="pcard-back-link">
           <ReactMarkdown>{markdown}</ReactMarkdown>
         </div>
