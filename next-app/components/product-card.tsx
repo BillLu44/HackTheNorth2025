@@ -27,7 +27,7 @@ export default function ProductCard({
   url,
 }: ProductCardProps) {
   const [flipped, setFlipped] = useState(false);
-  const toggle = () => setFlipped(v => !v);
+  const toggle = () => setFlipped((v) => !v);
 
   const markdown = `[Open link](${url})`;
 
@@ -69,7 +69,12 @@ export default function ProductCard({
       {/* FRONT */}
       <div className="pcard-face pcard-front">
         <div className="pcard-imgwrap">
-          <img className="pcard-img" src={imageSrc} alt={imageAlt} draggable={false} />
+          <img
+            className="pcard-img"
+            src={imageSrc}
+            alt={imageAlt}
+            draggable={false}
+          />
         </div>
         <h3 className="pcard-title">{title}</h3>
         <div className="pcard-meta">
@@ -85,10 +90,12 @@ export default function ProductCard({
       <div className="pcard-face pcard-back">
         <h4 className="pcard-back-title">{summary}</h4>
         <p className="pcard-back-text">{details}</p>
-        <p className="pcard-back-link">
+        <div className="pcard-back-link">
           <ReactMarkdown>{markdown}</ReactMarkdown>
-          </p>
-        <p className="pcard-back-hint">Click again or press Enter/Space to flip back.</p>
+        </div>
+        <p className="pcard-back-hint">
+          Click again or press Enter/Space to flip back.
+        </p>
       </div>
     </div>
   );
